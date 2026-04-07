@@ -1,0 +1,29 @@
+import mongoose from 'mongoose';
+
+const serverSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, "Name of app is required."],
+    },
+    url: {
+        type: String,
+        required:[true,"URL of your app is required."]
+    },
+    status: {
+        type: String,
+        enum:["up","down","pending"]
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        required:[true,"user is required"]
+    },
+    lastChecked: {
+        type:Date
+    },
+    responseTime: {
+        type: Number,
+        default:0
+    }
+})
+const serverModel = mongoose.model("servers", serverSchema);
+export default serverModel;
