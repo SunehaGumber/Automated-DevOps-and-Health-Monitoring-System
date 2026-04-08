@@ -11,14 +11,17 @@ const serverSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum:["up","down","pending"]
+        enum: ["up", "down", "pending"],
+        default:"pending"
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
+        ref:"user",
         required:[true,"user is required"]
     },
     lastChecked: {
-        type:Date
+        type: Date,
+        default:null
     },
     responseTime: {
         type: Number,

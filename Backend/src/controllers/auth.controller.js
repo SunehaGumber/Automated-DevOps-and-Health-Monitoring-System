@@ -10,7 +10,8 @@ import jwt from "jsonwebtoken";
 import config from "../config/config.js";
 import { checkOTP, sendOTP } from "../utils/otp.utils.js";
 
-export async function register(req, res) {
+
+export async function register(req, res,next) {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
@@ -34,10 +35,11 @@ export async function register(req, res) {
       password: hash,
     });
     const otp = generateOTP();
-    const html = generateHTML(otp);
-    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+    const html = generateHTML(otp,"Verification code","Please enter this code to verify yourself");
+    const otpHash = crypto.createHash("sha256").update(otp.toString()).digest("hex");
     await otpModel.create({
       user: user._id,
+      email:user.email,
       otpHash,
       createdAt: Date.now(),
     });
@@ -57,13 +59,11 @@ export async function register(req, res) {
       },
     });
   } catch (err) {
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
+    next(err);
   }
 }
 
-export async function verifyEmail(req, res) {
+export async function verifyEmail(req, res,next) {
   try {
     const user=await checkOTP(req, res);
 
@@ -83,13 +83,11 @@ export async function verifyEmail(req, res) {
       accessToken,
     });
   } catch (err) {
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
+    next(err);
   }
 }
 
-export async function login(req, res) {
+export async function login(req, res,next) {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -125,13 +123,11 @@ export async function login(req, res) {
       accessToken,
     });
   } catch (err) {
-    return res.status(500).json({
-      message: "Internal Server error!",
-    });
+    next(err);
   }
 }
 
-export async function rotateTokens(req, res) {
+export async function rotateTokens(req, res,next) {
   const session = req.session;
   const user = req.user;
 
@@ -175,13 +171,11 @@ export async function rotateTokens(req, res) {
       accessToken,
     });
   } catch (err) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    next(err);
   }
 }
 
-export async function logout(req, res) {
+export async function logout(req, res,next) {
   const session = req.session;
   try {
     session.revoked = true;
@@ -191,13 +185,11 @@ export async function logout(req, res) {
       message: "user logged out successfully!",
     });
   } catch (err) {
-    return res.status(500).json({
-      message: "Internal server error.",
-    });
+    next(err);
   }
 }
 
-export async function logoutall(req, res) {
+export async function logoutall(req, res,next) {
   const user = req.user;
   try {
     await sessionModel.updateMany(
@@ -212,9 +204,7 @@ export async function logoutall(req, res) {
       message: "logged out from all devices successfully!",
     });
   } catch (err) {
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    next(err);
   }
 }
 
@@ -226,7 +216,12 @@ export async function resendOtp(req, res) {
     "Your verification code",
     "Enter This code to verify yourself",
   );
-
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    return res.status(400).json({
+      message:"user don't exist."
+    })
+  }
   await sendEmail(
     email,
     "Verification Code",
@@ -239,7 +234,7 @@ export async function resendOtp(req, res) {
   });
 }
 
-export async function forgotPassword(req, res) {
+export async function forgotPassword(req, res,next) {
   try {
     const { email } = req.body;
     const otp = await sendOTP(req);
@@ -260,14 +255,11 @@ export async function forgotPassword(req, res) {
       message: "OTP sent successfully!",
     });
   } catch (err) {
-    const status = err.statusCode || 500;
-    return res.status(status).json({
-      message: err.message || "Internal Server Error",
-    });
+    next(err);
   }
 }
 
-export async function verifyCode(req, res) {
+export async function verifyCode(req, res,next) {
     try {
         const user = await checkOTP(req, res);
         const resetToken = jwt.sign({ id: user._id }, config.JWT_SECRET, {
@@ -280,12 +272,11 @@ export async function verifyCode(req, res) {
         });
         
     } catch (err) {
-        const status = err.statusCode || 500;
-    return res.status(status).json({ message: err.message || "Internal Server Error" });
+      next(err);
     }
 }
 
-export async function changePassword(req, res) {
+export async function changePassword(req, res,next) {
     try {
         const { resetToken, password } = req.body;
         if (!resetToken) {
@@ -303,9 +294,7 @@ export async function changePassword(req, res) {
         });
         
     }catch (err) {
-        return res.status(500).json({
-            message:"Internal Server error"
-        })
+      next(err);
     }
 }
 
