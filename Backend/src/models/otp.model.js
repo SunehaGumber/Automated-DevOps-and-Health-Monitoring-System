@@ -6,6 +6,13 @@ const otpSchema = new mongoose.Schema({
         ref: "users",
         required:[true,"user is required."]
     },
+    email: {
+        type: String,
+        required: [true, "Email is required!"],
+        unique: [true, "Email must be unique"],
+        match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Please fill a valid email address'],
+        lowercase:[true,"email address characters must be in lower case."]
+    },
     otpHash: {
         type: String,
         required:[true,"otphash is required."]

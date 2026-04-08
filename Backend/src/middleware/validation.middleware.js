@@ -7,7 +7,7 @@ export const validate = (schema) => (req, res, next) => {
     // error.errors contains the specific messages we wrote above
     return res.status(400).json({
       message: "Validation failed",
-      errors: error.errors.map(err => err.message)
+      errors: error.errors?.map(err => err.message)
     });
   }
 };
