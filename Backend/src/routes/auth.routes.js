@@ -13,7 +13,7 @@ const authRouter = Router();
  * @description Registers a user
  * @access Public
  */
-authRouter.post('/register', authLimiter,validate(registerUserSchema),authController.register);
+authRouter.post('/register',validate(registerUserSchema),authController.register);
 
 /**
  * @route POST/api/auth/verify-email

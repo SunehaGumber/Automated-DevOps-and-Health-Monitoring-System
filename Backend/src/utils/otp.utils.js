@@ -24,6 +24,7 @@ export async function sendOTP(req, res) {
   await otpModel.create({
     otpHash,
     user: user._id,
+    email
   });
 
   return otp;

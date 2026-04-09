@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+html,body{
+  background: #0b0d0f;
+  color:rgba(255, 255, 255, 0.805);
+}
+:root{
+   --color-primary: #2196f3;
+  --color-secondary: #263238;
+  --color-tertiary: #00E676;
+  --color-neutral: #101212;
+}
