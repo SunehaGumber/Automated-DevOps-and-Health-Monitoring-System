@@ -12,6 +12,7 @@ import {
   verifyOTP,
   changePassword,
   getMe,
+  change
 } from "../services/auth.service";
 
 export const useAuth = () => {
@@ -25,7 +26,7 @@ export const useAuth = () => {
       const response = await register(data);
       if (response?.user) {
         setUser(response.user);
-        return true; // Send success signal back to the form
+        return true;
       }
     } catch (err) {
       console.log(err);
@@ -40,6 +41,7 @@ export const useAuth = () => {
     try {
       const response = await login({ email, password });
       setUser(response.user);
+      return response;
     } catch (err) {
       console.log(err);
     } finally {
@@ -48,24 +50,22 @@ export const useAuth = () => {
   };
 
   const handleVerifyEmail = async ({ email, otp }) => {
-    setLoading(true);
+    
     try {
       const response = await verifyEmail({ email, otp });
       setUser(response.user);
+      return true;
     } catch (err) {
-    } finally {
-      setLoading(false);
-    }
+      return false;
+    } 
   };
 
   const handleRefreshToken = async () => {
-    setLoading(true);
+   
     try {
       const response = await refreshToken();
     } catch (err) {
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const handleLogout = async () => {
@@ -92,49 +92,52 @@ export const useAuth = () => {
 
   const handleResendOtp = async ({ email }) => {
     try {
-      setLoading(true);
-      const response = await resendOTP({email});
+      
+      const response = await resendOTP({ email });
+      return response;
     } catch (err) {
-    } finally {
-      setLoading(false);
-    }
+      return false;
+    } 
   };
 
   const handleForgotPassword = async ({ email }) => {
     try {
-      setLoading(true);
       const response = await forgotPassword({ email });
+      return response;
     } catch (err) {
-    } finally {
-      setLoading(false);
-    }
+      return false;
+    } 
   };
 
   const handleVerifyOTP = async ({ email, otp }) => {
     try {
-      setLoading(true);
-      const response = await verifyOTP({ email });
+     
+      const response = await verifyOTP({ email,otp });
     } catch (err) {
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const handleChangePassword = async ({ resetToken, password }) => {
     try {
-      setLoading(true);
+   
       const response = await changePassword({ resetToken, password });
 
       setUser(response.user);
     } catch (err) {
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
+  const handleChange = async ({currentPassword,newPassword,confirmPassword}) => {
+    try {
+    
+      const response = await change({ currentPassword, newPassword, confirmPassword });
+      return true;
+    } catch (err) {
+      
+    } 
+  }
   useEffect(() => {
     const initialize = async () => {
       try {
-        setLoading(true);
         const response = await getMe();
         if (response?.user) setUser(response.user);
       } catch (err) {
@@ -158,5 +161,7 @@ export const useAuth = () => {
     handleVerifyEmail,
     handleResendOtp,
     handleForgotPassword,
+    handleChange
   };
 };
+

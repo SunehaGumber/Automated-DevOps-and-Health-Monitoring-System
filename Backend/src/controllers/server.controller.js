@@ -1,6 +1,7 @@
 import serverModel from "../models/server.model.js";
 import { checkParticularServer } from "../cron/monitor.js";
 import { allServersOfUser } from "../cron/monitor.js";
+import logModel from "../models/log.model.js";
 
 export async function createServer(req, res,next) {
   const user = req.user;
@@ -82,46 +83,68 @@ export async function fetchServer(req, res,next) {
   }
 }
 
-export async function updateServer(req, res) {
+export async function updateServer(req, res, next) {
   const id = req.params.id;
   const user = req.user;
   const { name, url } = req.body;
 
   try {
+    // 1. Update the Server document
     const server = await serverModel.findOneAndUpdate(
-      {
-        _id: id,
-        user: user._id,
-      },
+      { _id: id, user: user._id },
       { name, url },
-      {
-        new: true,
-        runValidators: true,
-      },
-      );
-      
-      return res.status(201).json({
-          message: "Server updated successfully!",
-          server
-      })
+      { new: true, runValidators: true }
+    );
+
+    if (!server) {
+      return res.status(404).json({ message: "Server not found or unauthorized" });
+    }
+
+    // 2. Since URL is stored in logs, we must update all associated logs
+    // We only update the URL here because the name usually isn't in the log
+    await logModel.updateMany(
+      { server: id }, // Match all logs for this server
+      { $set: { url: url } } // Update them with the new URL
+    );
+
+    return res.status(200).json({
+      message: "Server and associated logs updated successfully!",
+      server,
+    });
   } catch (err) {
     next(err);
   }
 }
 
-export async function deleteServer(req, res,next) {
+export async function deleteServer(req, res, next) {
     const id = req.params.id;
     const user = req.user;
+
     try {
-        await serverModel.findOneAndDelete({
+        // 1. Attempt to delete the server first
+        const deletedServer = await serverModel.findOneAndDelete({
             _id: id,
-            user:user._id
-        })
+            user: user._id
+        });
+
+        // 2. Check if the server actually existed/belonged to the user
+        if (!deletedServer) {
+            return res.status(404).json({
+                message: "Server not found or unauthorized access."
+            });
+        }
+
+        // 3. Since the server was successfully deleted, clean up its logs
+        await logModel.deleteMany({
+            server: id,
+            user: user._id
+        });
+
         return res.status(200).json({
-            message:"Server deleted successfully!"
-        })
+            message: "Server and associated logs deleted successfully!"
+        });
     } catch (err) {
-      next(err);
+        next(err);
     }
 }
 

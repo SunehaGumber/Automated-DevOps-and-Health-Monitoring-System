@@ -85,6 +85,12 @@ authRouter.post('/changePassword', authController.changePassword);
  * @description fetched the current user
  * @access private
  */
-authRouter.get('/getMe',authMiddleware,authController.getMe)
+authRouter.get('/getMe', authMiddleware, authController.getMe)
 
+/**
+ * @route PATCH/api/auth/change
+ * @description changes password when user knows previous password.
+ * @access private
+ */
+authRouter.patch('/change',authMiddleware,authController.change)
 export default authRouter;

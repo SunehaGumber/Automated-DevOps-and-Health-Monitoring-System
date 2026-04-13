@@ -10,10 +10,9 @@ import jwt from "jsonwebtoken";
 import config from "../config/config.js";
 import { checkOTP, sendOTP } from "../utils/otp.utils.js";
 
-
-export async function register(req, res,next) {
+export async function register(req, res, next) {
   const { username, email, password } = req.body;
-
+  req.user = null;
   if (!username || !email || !password) {
     return res.status(400).json({
       message: "All fields are required for registering user.",
@@ -35,11 +34,18 @@ export async function register(req, res,next) {
       password: hash,
     });
     const otp = generateOTP();
-    const html = generateHTML(otp,"Verification code","Please enter this code to verify yourself");
-    const otpHash = crypto.createHash("sha256").update(otp.toString()).digest("hex");
+    const html = generateHTML(
+      otp,
+      "Verification code",
+      "Please enter this code to verify yourself",
+    );
+    const otpHash = crypto
+      .createHash("sha256")
+      .update(otp.toString())
+      .digest("hex");
     await otpModel.create({
       user: user._id,
-      email:user.email,
+      email: user.email,
       otpHash,
       createdAt: Date.now(),
     });
@@ -55,7 +61,7 @@ export async function register(req, res,next) {
         username: user.username,
         email: user.email,
         isVerified: user.isVerified,
-        role:user.role
+        role: user.role,
       },
     });
   } catch (err) {
@@ -63,9 +69,9 @@ export async function register(req, res,next) {
   }
 }
 
-export async function verifyEmail(req, res,next) {
+export async function verifyEmail(req, res, next) {
   try {
-    const user=await checkOTP(req, res);
+    const user = await checkOTP(req, res);
 
     user.isVerified = true;
     await user.save();
@@ -78,7 +84,7 @@ export async function verifyEmail(req, res,next) {
         email: user.email,
         username: user.username,
         verified: user.isVerified,
-        role:user.role
+        role: user.role,
       },
       accessToken,
     });
@@ -87,7 +93,7 @@ export async function verifyEmail(req, res,next) {
   }
 }
 
-export async function login(req, res,next) {
+export async function login(req, res, next) {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -118,7 +124,7 @@ export async function login(req, res,next) {
         username: user.username,
         email: user.email,
         verified: user.isVerified,
-        role:user.role
+        role: user.role,
       },
       accessToken,
     });
@@ -127,7 +133,7 @@ export async function login(req, res,next) {
   }
 }
 
-export async function rotateTokens(req, res,next) {
+export async function rotateTokens(req, res, next) {
   const session = req.session;
   const user = req.user;
 
@@ -175,7 +181,7 @@ export async function rotateTokens(req, res,next) {
   }
 }
 
-export async function logout(req, res,next) {
+export async function logout(req, res, next) {
   const session = req.session;
   try {
     session.revoked = true;
@@ -189,7 +195,7 @@ export async function logout(req, res,next) {
   }
 }
 
-export async function logoutall(req, res,next) {
+export async function logoutall(req, res, next) {
   const user = req.user;
   try {
     await sessionModel.updateMany(
@@ -219,8 +225,8 @@ export async function resendOtp(req, res) {
   const user = await userModel.findOne({ email });
   if (!user) {
     return res.status(400).json({
-      message:"user don't exist."
-    })
+      message: "user don't exist.",
+    });
   }
   await sendEmail(
     email,
@@ -234,7 +240,7 @@ export async function resendOtp(req, res) {
   });
 }
 
-export async function forgotPassword(req, res,next) {
+export async function forgotPassword(req, res, next) {
   try {
     const { email } = req.body;
     const otp = await sendOTP(req);
@@ -259,54 +265,102 @@ export async function forgotPassword(req, res,next) {
   }
 }
 
-export async function verifyCode(req, res,next) {
-    try {
-        const user = await checkOTP(req, res);
-        const resetToken = jwt.sign({ id: user._id }, config.JWT_SECRET, {
-          expiresIn: "10m",
-        });
-      
-        return res.status(200).json({
-          message: "Otp verified successfully.",
-          resetToken,
-        });
-        
-    } catch (err) {
-      next(err);
-    }
-}
+export async function verifyCode(req, res, next) {
+  try {
+    const user = await checkOTP(req, res);
+    const resetToken = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+      expiresIn: "10m",
+    });
 
-export async function changePassword(req, res,next) {
-    try {
-        const { resetToken, password } = req.body;
-        if (!resetToken) {
-          return res.status(400).json({
-            message: "first enter otp",
-          });
-        }
-        const decoded = jwt.verify(resetToken, config.JWT_SECRET);
-        const hash = await bcrypt.hash(password, 10);
-      
-        await userModel.findByIdAndUpdate(decoded.id, { password: hash });
-      
-        return res.status(200).json({
-          message: "Password updated successfully!",
-        });
-        
-    }catch (err) {
-      next(err);
-    }
-}
-
-export async function getMe(req,res){
-    const user = req.user;
     return res.status(200).json({
-        message: "user fetched successfully!",
-        user: {
-            username: user.username,
-            email: user.email,
-            verified: user.isVerified,
-            role:user.role
-        }
-    })
+      message: "Otp verified successfully.",
+      resetToken,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function changePassword(req, res, next) {
+  try {
+    const { resetToken, password } = req.body;
+    if (!resetToken) {
+      return res.status(400).json({
+        message: "first enter otp",
+      });
+    }
+    const decoded = jwt.verify(resetToken, config.JWT_SECRET);
+    const hash = await bcrypt.hash(password, 10);
+
+    await userModel.findByIdAndUpdate(decoded.id, { password: hash });
+
+    return res.status(200).json({
+      message: "Password updated successfully!",
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getMe(req, res) {
+  const user = req.user;
+  return res.status(200).json({
+    message: "user fetched successfully!",
+    user: {
+      username: user.username,
+      email: user.email,
+      verified: user.isVerified,
+      role: user.role,
+    },
+  });
+}
+
+export async function change(req, res,next) {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  try {
+    if (!currentPassword) {
+      return res.status(400).json({
+        message: "Please enter current password",
+      });
+    }
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({
+        message: "Please fill all the essential details.",
+      });
+    }
+
+    const user = req.user;
+    const userInDB = await userModel.findOne({
+      $or: [{ email: user.email }, { username: user.username }],
+    });
+    if (!userInDB) {
+      return res.status(400).json({
+        message: "Unauthenticated",
+      });
+    }
+    const match = await bcrypt.compare(currentPassword, userInDB.password);
+    if (!match) {
+      return res.status(400).json({
+        message: "Wrong current password",
+      });
+    }
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message: "Please verify both the fields.",
+      });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    await userInDB.updateOne({
+      password: hash,
+    });
+    await userInDB.save();
+
+    return res.status(200).json({
+      message: "Password updated successfully!",
+    });
+  } catch (err) {
+    next(err);
+  }
 }

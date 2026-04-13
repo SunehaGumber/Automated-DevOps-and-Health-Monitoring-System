@@ -118,7 +118,8 @@ export const allServersOfUser = async (user) => {
                     user: server.user,
                     lastChecked: server.lastChecked,
                     status: server.status,
-                    responseTime: server.responseTime
+                    responseTime: server.responseTime,
+                    url:server.url
                 })
             ]);
         });
