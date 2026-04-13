@@ -19,6 +19,7 @@ export const login = async ({ email, password }) => {
         })
         if (response.data?.accessToken) {
             localStorage.setItem("accessToken", response.data?.accessToken);
+            localStorage.setItem("isLogged", true);
         }
         return response.data;
     } catch (err) {
@@ -33,6 +34,7 @@ export const verifyEmail = async ({ email, otp })=>{
         })
         if (response.data?.accessToken) {
             localStorage.setItem("accessToken", response.data?.accessToken);
+            localStorage.setItem("isLogged", true);
         }
         return response.data;
     } catch (err) {
@@ -55,7 +57,11 @@ export const refreshToken = async () => {
 export const logout = async () => {
     try {
         const response = await API.patch('/api/auth/logout');
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("isLogged");
+        delete axios.defaults.headers.common['Authorization'];
         return response.data;
+        
     } catch (err) {
         console.log(err);
     }
@@ -64,6 +70,9 @@ export const logout = async () => {
 export const logoutAll = async () => {
     try {
         const response = await API.patch('/api/auth/logoutall');
+        localStorage.removeItem("accessToken");
+         localStorage.removeItem("isLogged");
+         delete axios.defaults.headers.common['Authorization'];
         return response.data;
     } catch (err) {
         console.log(err);
@@ -81,7 +90,7 @@ export const resendOTP = async ({ email }) => {
 
 export const forgotPassword = async ({ email })=>{
     try {
-        const response = await API.post('/forgot-password', { email });
+        const response = await API.post('api/auth/forgotPassword', { email });
         return response.data;
     } catch (err) {
         console.log(err);
@@ -114,6 +123,7 @@ export const changePassword = async ({ resetToken, password }) => {
         console.log(err);
     }
 }
+
 export const getMe = async ()=>{
     try {
         const response = await API.get('/api/auth/getMe');
@@ -126,3 +136,13 @@ export const getMe = async ()=>{
     }
 }
 
+export const change = async ({currentPassword,newPassword,confirmPassword}) => {
+    try {
+        const response = await API.patch('/api/auth/change', {
+            currentPassword,newPassword,confirmPassword
+        })
+        return response.data;
+    } catch (err) {
+        console.log(err);
+    }
+}

@@ -22,7 +22,6 @@ serverRouter.post('/createServer',authMiddleware,validate(serverSchema), serverC
 serverRouter.get('/getServers', authMiddleware, serverController.getServers);
 
 
-
 /**
  * @route PATCH/api/server/update/:id
  * @description Updates Server settings
@@ -44,7 +43,7 @@ serverRouter.delete('/delete/:id', authMiddleware, serverController.deleteServer
 serverRouter.get('/check/:id', authMiddleware, serverController.checkServer)
 
 /**
- * @route GET/api/server/updateAll
+ * @route GET/api/server/update
  * @description it refreshes all the servers of a user
  * @access private
  */

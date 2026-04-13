@@ -1,139 +1,36 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router";
-
-const ShieldIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#2563eb"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-const LockIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="11" width="18" height="11" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>
-);
-
-const EyeIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-
-const EyeOffIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-    <line x1="1" y1="1" x2="23" y2="23" />
-  </svg>
-);
-
-const LoginIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-    <polyline points="10 17 15 12 10 7" />
-    <line x1="15" y1="12" x2="3" y2="12" />
-  </svg>
-);
-
-const AlertIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#f87171"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="shrink-0"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-);
+import { replace, useNavigate } from "react-router";
+import { toast } from "react-toastify";
+import { ShieldIcon,UserIcon,LockIcon,EyeIcon,EyeOffIcon,LoginIcon } from "../../common/Icons";
 
 export default function Login() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    
-    const { user, handleLogin } = useAuth();
+  const [loading, setLoading] = useState(false); 
+  const { handleLogin } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
+    try {
+      setLoading(true);
       const response = await handleLogin({ email, password });
       if (response) {
-          navigate('/');
-        }
+        toast.success("User logged in successfully!");
+        navigate('/dashboard', { replace: true });
+      }
+      else {
+        toast.error("Invalid credentials")
+      }
+    }
+    catch (err) {
+      toast.error(err);
+    }
+    finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -173,14 +70,6 @@ export default function Login() {
                 session.
               </p>
             </div>
-
-            {/* Error */}
-            {error && (
-              <div className="flex items-center gap-2 bg-[#120a0a] border border-[#2d1010] rounded-[9px] px-3 py-2 mb-4">
-                <AlertIcon />
-                <span className="text-[11px] text-red-400">{error}</span>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {/* Identifier */}
@@ -271,7 +160,9 @@ export default function Login() {
             </form>
             <p className="text-sm mt-5 text-center text-[9.5px] text-slate-500 uppercase tracking-[.14em]">
               Don't have an account?{" "}
-              <span className="text-blue-600 text-[9.5px]  uppercase tracking-[.14em] cursor-pointer">
+              <span onClick={() => {
+                navigate('/register')
+              }} className="text-blue-600 text-[9.5px]  uppercase tracking-[.14em] cursor-pointer">
                 Register
               </span>
             </p>

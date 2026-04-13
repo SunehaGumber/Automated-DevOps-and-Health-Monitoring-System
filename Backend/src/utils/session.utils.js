@@ -36,7 +36,7 @@ export default async function createSession(user,req,res) {
     });
     res.cookie("token", refreshToken, {
       httpOnly: true,
-      sameSite: "Strict",
+      sameSite: "Lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     });

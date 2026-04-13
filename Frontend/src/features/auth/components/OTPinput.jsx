@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 const ShieldIcon = () => (
   <svg
@@ -65,6 +66,7 @@ const RefreshIcon = () => (
     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
   </svg>
 );
+
 export default function OtpInput() {
   const inputs = useRef([]);
   const { handleVerifyEmail, user, handleResendOtp } = useAuth();
@@ -96,15 +98,27 @@ export default function OtpInput() {
     inputs.current[Math.min(pasted.length, 5)]?.focus();
   };
 
-  const submitHandler = async (e) => {
-    const otpValue = inputs.current.map((input) => input.value).join("");
-    if (otpValue.length < 6) {
+  const submitHandler = async () => {
+    try {
+      const otpValue = inputs.current.map((input) => input.value).join("");
+      if (otpValue.length < 6) {
+      }
+  
+      const result = await handleVerifyEmail({
+        email: user.email,
+        otp: otpValue,
+      });
+      if (result) {
+        toast.success("Otp verified successfully!")
+        navigate('/')
+      }
+      else {
+        toast.error("Invalid otp");
+      }
+      
+    } catch (err) {
+      toast.error(err);
     }
-
-    const result = await handleVerifyEmail({
-      email: user.email,
-      otp: otpValue,
-    });
   };
 
   const resetCodeHandler = async () => {
@@ -117,6 +131,12 @@ export default function OtpInput() {
     const response = await handleResendOtp({
       email: user.email,
     });
+    if (response) {
+      toast.success("Otp sent successfully!")
+    }
+    else {
+      toast.error("Too many login attempts")
+    }
   };
   return (
     <div className="min-h-screen bg-[#080a0d] flex items-center justify-center px-4 py-10 font-mono">
