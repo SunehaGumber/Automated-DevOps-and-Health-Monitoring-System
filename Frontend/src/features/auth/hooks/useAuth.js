@@ -112,17 +112,18 @@ export const useAuth = () => {
   const handleVerifyOTP = async ({ email, otp }) => {
     try {
      
-      const response = await verifyOTP({ email,otp });
+      const response = await verifyOTP({ email, otp });
+      return response;
     } catch (err) {
     } 
   };
 
-  const handleChangePassword = async ({ resetToken, password }) => {
+  const handleChangePassword = async ({password,confirmPassword},config) => {
     try {
    
-      const response = await changePassword({ resetToken, password });
-
+      const response = await changePassword({password,confirmPassword },config);
       setUser(response.user);
+      return response;
     } catch (err) {
     } 
   };

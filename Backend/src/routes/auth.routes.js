@@ -4,8 +4,9 @@ import { sessionMiddleware } from '../middleware/session.middleware.js';
 import { authLimiter } from '../middleware/ratelimiter.middleware.js';
 import { registerUserSchema,loginUserSchema } from '../validators/auth.validators.js';
 import { validate } from '../middleware/validation.middleware.js';
-import { otpSchema, emailSchema } from '../validators/otp.validators.js';
+import { otpSchema, emailSchema, verifyOtpSchema } from '../validators/otp.validators.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import { resetMiddleware } from '../middleware/reset.middleware.js';
 const authRouter = Router();
 
 /**
@@ -71,14 +72,14 @@ authRouter.post('/forgotPassword', authLimiter, validate(emailSchema), authContr
  * @access Private
  */
 
-authRouter.post('/verifyOTP', authLimiter, validate(otpSchema), authController.verifyCode);
+authRouter.post('/verifyOTP', authLimiter, validate(verifyOtpSchema), authController.verifyCode);
 
 /**
  * @route POST/api/auth/changePassword
  * @description changes password if user has a reset token
  * @access Private
  */
-authRouter.post('/changePassword', authController.changePassword);
+authRouter.post('/changePassword',resetMiddleware, authController.changePassword);
 
 /**
  * @route GET/api/auth/getMe

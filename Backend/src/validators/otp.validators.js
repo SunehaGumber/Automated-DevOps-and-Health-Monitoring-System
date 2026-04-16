@@ -15,3 +15,7 @@ export const emailSchema = z.object({
     .email("Invalid email format. Please provide a real email address.")
     .toLowerCase(),
 });
+export const verifyOtpSchema = z.object({
+  email: z.string().email().trim(),
+  otp: z.string().length(6, "OTP must be 6 digits")
+});

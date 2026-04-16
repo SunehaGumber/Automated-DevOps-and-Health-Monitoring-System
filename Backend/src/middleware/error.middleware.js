@@ -1,5 +1,4 @@
 export const errorHandler = (err, req, res, next) => {
-    // If the error has a status code, use it; otherwise, default to 500 (Server Error)
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 

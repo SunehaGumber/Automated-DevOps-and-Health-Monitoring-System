@@ -61,7 +61,7 @@ const ProfileForm = ({ setStep }) => {
         setStep("otp"); 
       }
       else {
-        toast.error("Something went wrong!")
+        toast.error("Too many login attempts!")
       }
     } finally {
       setSubmitting(false);

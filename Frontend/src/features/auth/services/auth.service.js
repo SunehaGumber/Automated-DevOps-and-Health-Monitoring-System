@@ -97,10 +97,11 @@ export const forgotPassword = async ({ email })=>{
     }
 }
 
-export const verifyOTP = async ({ email }) => {
+export const verifyOTP = async ({ email,otp }) => {
     try {
         const response = await API.post('/api/auth/verifyOTP', {
-            email
+            email,
+            otp
         });
          if (response.data?.resetToken) {
             localStorage.setItem("resetToken", response.data?.resetToken);
@@ -111,12 +112,12 @@ export const verifyOTP = async ({ email }) => {
     }
 }
 
-export const changePassword = async ({ resetToken, password }) => {
+export const changePassword = async ({password,confirmPassword },config) => {
     try {
         const response = await API.post('/api/auth/changePassword', {
-            resetToken,
-            password
-        });
+            password,
+            confirmPassword
+        },config);
         localStorage.removeItem("resetToken");
         return response.data;
     } catch (err) {

@@ -10,7 +10,7 @@ export default function Register() {
             )}
     
             {step === "otp" && (
-                <OtpInput />
+                <OtpInput navigation={home} />
             )}
         </div>
     );

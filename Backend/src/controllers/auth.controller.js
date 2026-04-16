@@ -283,16 +283,22 @@ export async function verifyCode(req, res, next) {
 
 export async function changePassword(req, res, next) {
   try {
-    const { resetToken, password } = req.body;
-    if (!resetToken) {
+    const {password,confirmPassword } = req.body;
+  
+    if (!password || !confirmPassword) {
       return res.status(400).json({
-        message: "first enter otp",
-      });
+        message:"Please enter all the details!"
+      })
     }
-    const decoded = jwt.verify(resetToken, config.JWT_SECRET);
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        message:"Unmatched passwords!"
+      })
+    }
+    const user = req.user;
     const hash = await bcrypt.hash(password, 10);
 
-    await userModel.findByIdAndUpdate(decoded.id, { password: hash });
+    await userModel.findByIdAndUpdate(user._id, { password: hash });
 
     return res.status(200).json({
       message: "Password updated successfully!",
