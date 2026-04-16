@@ -7,6 +7,7 @@ import ServerForm from "../features/server/pages/ServerForm";
 import Dashboard from "../features/server/pages/Dashboard";
 import ServerDetail from "../features/server/pages/ServerDetailPage";
 import Profile from "../features/auth/pages/Profile";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
 
 export const router = createBrowserRouter([
   {
@@ -53,4 +54,11 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+  {
+    path: "/forgotPassword",
+    element: (
+
+        <ForgotPassword/>
+    )
+  }
 ]);

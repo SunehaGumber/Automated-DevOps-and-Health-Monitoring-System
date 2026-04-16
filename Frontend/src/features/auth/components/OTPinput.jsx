@@ -2,76 +2,13 @@ import { useRef } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { ShieldIcon, MailIcon, ArrowRightIcon, RefreshIcon } from '../../common/Icons'
 
-const ShieldIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#2563eb"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-
-const MailIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#2563eb"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="2" y="4" width="20" height="16" rx="2" />
-    <path d="m2 7 10 7 10-7" />
-  </svg>
-);
-
-const ArrowRightIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-    <polyline points="10 17 15 12 10 7" />
-    <line x1="15" y1="12" x2="3" y2="12" />
-  </svg>
-);
-
-const RefreshIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="23 4 23 10 17 10" />
-    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-  </svg>
-);
-
-export default function OtpInput() {
+export default function OtpInput({navigation,email}) {
   const inputs = useRef([]);
-  const { handleVerifyEmail, user, handleResendOtp } = useAuth();
+  const { handleVerifyEmail, handleVerifyOTP,user, handleResendOtp } = useAuth();
   const navigate = useNavigate();
-
+  const activeEmail = email || user.email;
   const handleInput = (e, index) => {
     const val = e.target.value.replace(/[^0-9]/g, "");
     e.target.value = val.slice(-1);
@@ -98,38 +35,66 @@ export default function OtpInput() {
     inputs.current[Math.min(pasted.length, 5)]?.focus();
   };
 
-  const submitHandler = async () => {
-    try {
-      const otpValue = inputs.current.map((input) => input.value).join("");
-      if (otpValue.length < 6) {
-      }
-  
-      const result = await handleVerifyEmail({
-        email: user.email,
-        otp: otpValue,
-      });
-      if (result) {
-        toast.success("Otp verified successfully!")
-        navigate('/')
-      }
-      else {
-        toast.error("Invalid otp");
-      }
-      
-    } catch (err) {
-      toast.error(err);
+const submitHandler = async () => {
+  try {
+    const otpValue = inputs.current.map((input) => input?.value || "").join("");
+    
+    if (otpValue.length < 6) {
+      return toast.error("Please enter a complete 6-digit OTP!");
     }
-  };
+
+    // 1. Declare result at the top
+    let result = null;
+
+    // 2. Run the correct handler based on the navigation prop
+    if (navigation === "forgotPassword") {
+      result = await handleVerifyOTP({
+        email: activeEmail.trim().toLowerCase(),
+        otp: otpValue
+      });
+    } else if (navigation === "home") {
+      result = await handleVerifyEmail({
+        email: activeEmail.trim().toLowerCase(),
+        otp: otpValue,
+      }); 
+    }
+
+    // 3. Logic Check: Only proceed if result was actually returned
+    if (result && result.resetToken) {
+      toast.success("OTP verified successfully!");
+
+      if (navigation === 'home') {
+        // Use replace: true to clean the navigation stack
+        return navigate('/', { replace: true }); 
+      } else if (navigation === 'forgotPassword') {
+        // Ensure you are using result.token or result.resetToken 
+        // based on your backend response
+        return navigate('/forgotPassword', { 
+          state: { token: result.resetToken || result.token },
+          replace: true 
+        });
+      }
+    } else {
+      // This only runs if the API call happened but success was false
+      return toast.error("Invalid OTP. Please try again.");
+    }
+
+  } catch (err) {
+    // This catches network errors (400, 401, 500)
+    const errorMsg = err.response?.data?.message || "Verification failed";
+    return toast.error(errorMsg);
+  }
+};
 
   const resetCodeHandler = async () => {
-    if (!user?.email) {
+    if (!activeEmail) {
       console.error("Sentinel: Operator identity not found for resend.");
       return;
     }
 
     // 2. Call the hook
     const response = await handleResendOtp({
-      email: user.email,
+      email: activeEmail,
     });
     if (response) {
       toast.success("Otp sent successfully!")
@@ -178,7 +143,7 @@ export default function OtpInput() {
               <p className="text-[12px] text-slate-600 mt-2 leading-relaxed font-sans">
                 Enter the 6-digit code dispatched to{" "}
                 <span className="text-slate-400">
-                  {user?.email || "your email"}
+                  {activeEmail}
                 </span>
               </p>
             </div>
