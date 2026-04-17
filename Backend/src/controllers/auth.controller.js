@@ -298,10 +298,14 @@ export async function changePassword(req, res, next) {
     const user = req.user;
     const hash = await bcrypt.hash(password, 10);
 
-    await userModel.findByIdAndUpdate(user._id, { password: hash });
+    const user1=await userModel.findByIdAndUpdate(user._id, { password: hash });
+
+    const accessToken = await createSession(user, req, res);
 
     return res.status(200).json({
       message: "Password updated successfully!",
+      accessToken,
+      user:user1
     });
   } catch (err) {
     next(err);

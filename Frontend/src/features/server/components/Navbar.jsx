@@ -3,12 +3,11 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../../auth/hooks/useAuth";
 import {
   ShieldIcon,
-  PlusIcon,
   UserIcon,
   LogoutIcon,
   LogoutAllIcon,
   ServerIcon,
-} from "../../common/Icons";
+} from "../../common/Icons"
 import { toast } from "react-toastify";
 
 const Navbar = () => {
@@ -32,13 +31,15 @@ const Navbar = () => {
     if (response) {
       toast.success("user logged out successfully");
     }
+    
   };
 
   const logoutHandlerAll = async () => {
     const response = await handleLogoutAll();
     if (response) {
       toast.success("user logged out successfully from all devices.");
-    } 
+    }
+   
   };
   const initials = () => {
     if (!user) return "";

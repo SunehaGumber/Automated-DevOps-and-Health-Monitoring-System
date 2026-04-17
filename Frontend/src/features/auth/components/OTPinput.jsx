@@ -43,10 +43,8 @@ const submitHandler = async () => {
       return toast.error("Please enter a complete 6-digit OTP!");
     }
 
-    // 1. Declare result at the top
     let result = null;
 
-    // 2. Run the correct handler based on the navigation prop
     if (navigation === "forgotPassword") {
       result = await handleVerifyOTP({
         email: activeEmail.trim().toLowerCase(),
@@ -59,28 +57,23 @@ const submitHandler = async () => {
       }); 
     }
 
-    // 3. Logic Check: Only proceed if result was actually returned
+   
     if (result && result.resetToken) {
       toast.success("OTP verified successfully!");
 
       if (navigation === 'home') {
-        // Use replace: true to clean the navigation stack
         return navigate('/', { replace: true }); 
       } else if (navigation === 'forgotPassword') {
-        // Ensure you are using result.token or result.resetToken 
-        // based on your backend response
         return navigate('/forgotPassword', { 
           state: { token: result.resetToken || result.token },
           replace: true 
         });
       }
     } else {
-      // This only runs if the API call happened but success was false
       return toast.error("Invalid OTP. Please try again.");
     }
 
   } catch (err) {
-    // This catches network errors (400, 401, 500)
     const errorMsg = err.response?.data?.message || "Verification failed";
     return toast.error(errorMsg);
   }

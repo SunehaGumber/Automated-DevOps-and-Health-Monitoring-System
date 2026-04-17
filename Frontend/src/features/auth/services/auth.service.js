@@ -117,8 +117,14 @@ export const changePassword = async ({password,confirmPassword },config) => {
         const response = await API.post('/api/auth/changePassword', {
             password,
             confirmPassword
-        },config);
+        }, config);
+        
         localStorage.removeItem("resetToken");
+
+        if (response.data?.accessToken) {
+            localStorage.setItem("accessToken", response.data?.accessToken);
+            localStorage.setItem("isLogged", true);
+        }
         return response.data;
     } catch (err) {
         console.log(err);
