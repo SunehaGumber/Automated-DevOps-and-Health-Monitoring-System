@@ -151,7 +151,7 @@ export async function deleteServer(req, res, next) {
 export async function checkServer(req, res,next) {
     const id = req.params.id;
   const user = req.user;
-  console.log(user);
+
     try {
         const server = await checkParticularServer(id, user); 
         return res.status(200).json({

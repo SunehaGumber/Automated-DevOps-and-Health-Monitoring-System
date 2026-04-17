@@ -9,7 +9,7 @@ const Profile = () => {
     return (
         <div className='container'>
           {step=== "profile" && <ProfileForm setStep={setStep}/>}
-        {step === "otp" && <OtpInput navigation={forgotPassword} />}        
+        {step === "otp" && <OtpInput navigation={"forgotPassword"} />}        
         </div>
   )
 }

@@ -47,7 +47,6 @@ export default function ForgotPassword() {
     }
 
       try {
-          console.log(resetToken);
       const data = await handleChangePassword(
         { password, confirmPassword },
         {
@@ -58,8 +57,8 @@ export default function ForgotPassword() {
       );
 
       if (data) {
-        toast.success("Password updated! You can now log in.");
-        navigate("/login"); 
+        toast.success("Password updated successfully");
+        navigate("/dashboard"); 
       }
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to update password";

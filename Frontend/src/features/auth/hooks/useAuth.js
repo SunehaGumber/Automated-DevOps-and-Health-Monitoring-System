@@ -122,7 +122,7 @@ export const useAuth = () => {
     try {
    
       const response = await changePassword({password,confirmPassword },config);
-      setUser(response.user);
+      setUser(response?.user);
       return response;
     } catch (err) {
     } 

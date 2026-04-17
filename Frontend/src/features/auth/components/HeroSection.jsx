@@ -3,7 +3,7 @@ import { LoginIcon } from "../../common/Icons";
 
 
 const HeroSection = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <section className="flex flex-col items-center text-center px-8 pt-[72px] pb-16">
 

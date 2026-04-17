@@ -11,11 +11,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#080a0d] font-mono">
-      <Navbar/>
+      <Navbar />
+      
       <HeroSection />
 
       <div className="h-px bg-[#1c2130] mx-8" />
-
+      
       <MockDashboard />
 
       <div className="h-px bg-[#1c2130] mx-8" />

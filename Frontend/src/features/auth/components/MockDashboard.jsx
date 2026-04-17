@@ -1,5 +1,5 @@
 import React from 'react'
-import { LoginIcon,ServerIcon } from '../../common/Icons';
+import { ServerIcon } from '../../common/Icons';
 const mockServers = [
   { name: "prod-api-01", url: "api.sentinel.io", status: "up", ms: "98ms" },
   { name: "db-primary", url: "db.sentinel.io", status: "down", ms: "—" },
