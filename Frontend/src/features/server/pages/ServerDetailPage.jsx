@@ -63,6 +63,7 @@ export default function ServerDetail() {
     };
     initPage();
   }, [id]);
+  
   const avgResponse = getAvgResponse(logs);
   const navigate = useNavigate();
   const uptimePct = getUptimePct(logs);

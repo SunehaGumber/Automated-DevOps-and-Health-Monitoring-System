@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { useService } from "../hooks/useService";
+import { useState,useEffect } from "react";
 const ServerIcon = () => (
   <svg
     width="14"
@@ -68,6 +69,16 @@ const ServerCard = ({ server, getResponseColor }) => {
   const refreshParticularServer = async ({ id }) => {
     await handleCheckServer({ id });
   };
+
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
   return (
     <div className="bg-[#0e1117] border border-[#1c2130] hover:border-[#263349] rounded-2xl p-4 cursor-pointer transition-all w-full">
       <div className="flex items-start justify-between mb-3">

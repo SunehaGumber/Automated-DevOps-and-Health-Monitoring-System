@@ -5,7 +5,6 @@ import { useNavigate } from "react-router";
 import Navbar from "../../server/components/Navbar";
 import { ShieldIcon,BackIcon,UserIcon,MailIcon,LockIcon,EyeIcon,EyeOffIcon,SaveIcon,KeyIcon,MailSendIcon } from "../../common/Icons";
 
-
 const Field = ({ label, tag, icon, children }) => (
   <div>
     <div className="flex justify-between items-center mb-1.5">

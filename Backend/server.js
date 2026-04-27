@@ -1,14 +1,18 @@
 import app from './src/app.js';
 import connectDB from './src/config/db.js';
-import { initCron } from '../Backend/src/cron/monitor.js';
+import { initCron } from './src/cron/monitor.js';
+import http from 'http'
+import initSocket from './src/socket/socket.js';
+
+const server = http.createServer(app);
 
 async function startServer() {
     try {
         await connectDB();
+        initSocket(server);
 
-        app.listen(3000, () => {
+        server.listen(3000, () => {
             console.log("Server is running on port:3000");
-
             initCron(); 
         });
 
@@ -18,3 +22,6 @@ async function startServer() {
 }
 
 startServer();
+
+
+
