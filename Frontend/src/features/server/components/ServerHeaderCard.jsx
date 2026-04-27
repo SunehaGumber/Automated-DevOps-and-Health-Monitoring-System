@@ -1,6 +1,11 @@
 import { ServerIcon } from '../../common/Icons';
+import {useState,useEffect} from 'react'
+const ServerHeaderCard = ({ server, getResponseColor, avgResponse, uptimePct, logs }) => {
+  const [displayResponse, setDisplayResponse] = useState(server.responseTime);
 
-const ServerHeaderCard = ({server,getResponseColor,avgResponse,uptimePct,logs}) => {
+useEffect(() => {
+  setDisplayResponse(server.responseTime);
+}, [server.responseTime]);
   return (
     <div className="bg-[#0e1117] border border-[#1c2130] rounded-2xl p-5">
           <div className="flex items-start justify-between mb-5">
@@ -34,8 +39,8 @@ const ServerHeaderCard = ({server,getResponseColor,avgResponse,uptimePct,logs}) 
             {[
               {
                 label: "Current response",
-                value: server?.responseTime ? `${server?.responseTime}ms` : "—",
-                color: getResponseColor(server?.status, server?.responseTime),
+                value: displayResponse ? `${displayResponse}ms` : "—",
+                color: getResponseColor(server?.status, displayResponse),
               },
               {
                 label: "Avg response",

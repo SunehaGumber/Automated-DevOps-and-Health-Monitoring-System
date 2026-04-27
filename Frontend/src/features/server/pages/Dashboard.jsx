@@ -5,43 +5,9 @@ import { useService } from "../hooks/useService";
 import ServerCard from "../components/ServerCard";
 import Footer from "../components/Footer";
 import ServerListHeader from "../components/ServerListHeader";
-import {Spinner} from '../../auth/components/Spinner'
-
-const ServerIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#2563eb"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="2" y="2" width="20" height="8" rx="2" />
-    <rect x="2" y="14" width="20" height="8" rx="2" />
-    <line x1="6" y1="6" x2="6.01" y2="6" />
-    <line x1="6" y1="18" x2="6.01" y2="18" />
-  </svg>
-);
-
-
-const RefreshIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M23 4v6h-6" />
-    <path d="M1 20v-6h6" /> 
-    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-  </svg>
-);
+import { Spinner } from "../../auth/components/Spinner";
+import { socket } from "../../../socket/socket";
+import { RefreshIcon, ServerIcon } from "../../common/Icons";
 
 const getResponseColor = (status, ms) => {
   if (status === "down" || ms === null) return "text-red-500";
@@ -51,9 +17,9 @@ const getResponseColor = (status, ms) => {
 };
 
 export default function Dashboard() {
-    const {handleGetServers,servers,handleRefreshServers } = useService();
-  const [loading, setLoading] = useState(false)
-  
+  const { handleGetServers, servers, handleRefreshServers } = useService();
+  const [loading, setLoading] = useState(false);
+
   const total = servers?.length;
   useEffect(() => {
     try {
@@ -61,25 +27,40 @@ export default function Dashboard() {
         await handleGetServers();
       };
       getAllServers();
-    } catch (err) {
-      
-    }
+    } catch (err) {}
   }, []);
-    
+  useEffect(() => {
+    console.log("Socket connected?", socket.connected);
+
+    if (socket.connected) {
+      console.log("✅ CONNECTED (instant):", socket.id);
+    }
+
+    socket.on("connect", () => {
+      console.log("✅ CONNECTED (event):", socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("❌ DISCONNECTED");
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+    };
+  }, []);
   const refreshServersHandler = async () => {
     try {
       setLoading(true);
       const response = await handleRefreshServers();
-        
     } catch (err) {
-      
     } finally {
       setLoading(false);
-      }
     }
-    if (loading) {
-     return <Spinner/>
-   }
+  };
+  if (loading) {
+    return <Spinner />;
+  }
   return (
     <div className="min-h-screen bg-[#080a0d] font-mono">
       {/* Navbar */}
@@ -99,26 +80,28 @@ export default function Dashboard() {
               Monitoring {total} server{total !== 1 ? "s" : ""} · checks every 2
               minutes
             </p>
-                  </div>
-                  <div className="flex flex-end flex-col justify-end">
-                      <button onClick={() => {
-                          refreshServersHandler();
-                      }} className="flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 active:scale-[.99] text-white border-none rounded-[8px] px-3 py-1.5 text-[10px] font-bold tracking-widest cursor-pointer transition-all font-mono">
-            <RefreshIcon />
-            Refresh Servers
-          </button>
-          <span className="text-[9.5px] text-[#263349] tracking-wider">
-            LAST CHECK: 1 min ago
-          </span>
-                      
-                  </div>
+          </div>
+          <div className="flex flex-end flex-col justify-end">
+            <button
+              onClick={() => {
+                refreshServersHandler();
+              }}
+              className="flex items-center gap-1.5 bg-blue-700 hover:bg-blue-800 active:scale-[.99] text-white border-none rounded-[8px] px-3 py-1.5 text-[10px] font-bold tracking-widest cursor-pointer transition-all font-mono"
+            >
+              <RefreshIcon />
+              Refresh Servers
+            </button>
+            <span className="text-[9.5px] text-[#263349] tracking-wider">
+              LAST CHECK: 1 min ago
+            </span>
+          </div>
         </div>
 
         {/* Stat cards */}
         <StatsCard data={servers} />
 
         {/* Servers list header */}
-       <ServerListHeader/>
+        <ServerListHeader />
 
         {/* Server cards grid */}
         {servers?.length === 0 ? (
@@ -136,14 +119,18 @@ export default function Dashboard() {
         ) : (
           <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 ">
             {servers?.map((server) => (
-               <ServerCard key={server._id} server={server} getResponseColor={getResponseColor} />
+              <ServerCard
+                key={server._id}
+                server={server}
+                getResponseColor={getResponseColor}
+              />
             ))}
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <Footer/>
+      <Footer />
     </div>
   );
 }
