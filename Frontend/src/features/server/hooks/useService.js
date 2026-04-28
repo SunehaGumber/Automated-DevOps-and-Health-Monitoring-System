@@ -126,18 +126,6 @@ export const useService = () => {
           lastChecked: data.lastChecked,
         };
       });
-      setLogs((prev) => {
-        if (!prev || prev.length === 0) return prev;
-
-        const newLog = {
-          server: data.serverId,
-          status: data.status,
-          responseTime: data.responseTime,
-          lastChecked: data.lastChecked,
-        };
-
-        return [...prev, newLog].slice(-50);
-      });
     };
     socket.on("server-status-update", (data) => {
       handleRealTimeUpdate(data);
@@ -145,6 +133,30 @@ export const useService = () => {
 
     return () => {
       socket.off("server-status-update", handleRealTimeUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    const logHandler = (log) => {
+      console.log(`UI received log: ${log._id} at ${performance.now()}`);
+      setLogs((prev) => {
+        // Ensure we are working with an array
+        const currentLogs = prev || [];
+
+        // Use a Map or a Set check for better reliability during rapid fires
+        if (currentLogs.some((l) => l._id === log._id)) {
+          return currentLogs;
+        }
+
+        // Prepend the new log and limit the size
+        return [log, ...currentLogs].slice(0, 50);
+      });
+    };
+
+    socket.on("new-log", logHandler);
+
+    return () => {
+      socket.off("new-log", logHandler);
     };
   }, []);
   return {

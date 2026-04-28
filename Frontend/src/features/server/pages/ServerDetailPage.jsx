@@ -10,16 +10,22 @@ import { Spinner } from "../../auth/components/Spinner";
 import { BackIcon } from "../../common/Icons";
 
 const formatUTC = (iso) => {
-  if (!iso) {
-    return "-";
-  }
-  const d = new Date(iso);
-  return `${d.toISOString().slice(0, 10)} · ${d.toISOString().slice(11, 16)} UTC`;
-};
+  if (!iso) return "-";
 
+  const d = new Date(iso);
+
+  return `${d.toLocaleDateString()} · ${d.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+};
 const formatTime = (iso) => {
   if (!iso) return "-";
-  return new Date(iso).toISOString().slice(11, 16);
+
+  return new Date(iso).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const getAvgResponse = (logs) => {
@@ -52,8 +58,7 @@ const getResponseColor = (status, ms) => {
 
 export default function ServerDetail() {
   const { id } = useParams();
-  const { server, handleFetchServer, handleGetLogs, logs, loading } =
-    useService();
+  const { server, handleFetchServer, handleGetLogs, logs, loading } = useService();
   useEffect(() => {
     const initPage = async () => {
       if (id) {
@@ -114,7 +119,7 @@ export default function ServerDetail() {
         <ResponseTimeChart chartData={chartData} />
         {/* Log table */}
         <LogTable
-          logs={logs}
+          logs={logs.filter(l => l.server?.toString() === id)}
           formatUTC={formatUTC}
           getResponseColor={getResponseColor}
         />

@@ -112,3 +112,41 @@ export const serverDown = (lastChecked, name, url) => {
     </html>
     `;
 };
+
+export const serverUp = (lastChecked, name, url) => {
+    const formattedDate = new Date(lastChecked).toLocaleString('en-IN', {
+        dateStyle: 'long',
+        timeStyle: 'short',
+    });
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Server Restored</title>
+    </head>
+    <body style="font-family: 'Segoe UI', sans-serif; background-color: #f4f7f9; margin: 0; padding: 0;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; margin-top: 50px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            <tr>
+                <td bgcolor="#10b981" style="padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px;">✅ Service Restored</h1>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 40px 30px;">
+                    <p style="font-size: 16px; color: #4a5568;">Great news,</p>
+                    <p style="font-size: 16px; color: #4a5568;">Your service is <strong>back online</strong> and responding normally.</p>
+                    
+                    <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0;">
+                        <p style="margin: 5px 0;"><strong>Server:</strong> ${name}</p>
+                        <p style="margin: 5px 0;"><strong>URL:</strong> <a href="${url}" style="color: #3182ce;">${url}</a></p>
+                        <p style="margin: 5px 0;"><strong>Restored At:</strong> ${formattedDate}</p>
+                        <p style="margin: 5px 0; color: #059669;"><strong>Status:</strong> OPERATIONAL / UP</p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>`;
+};

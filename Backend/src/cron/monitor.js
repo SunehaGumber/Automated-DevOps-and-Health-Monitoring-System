@@ -6,11 +6,18 @@ import { serverDown } from "../utils/email.utils.js";
 import sendEmail from "../services/email.service.js";
 import { getIO } from "../socket/socket.js";
 
+let isRunning = false;
 export const runHealthCheck = async () => {
-  const io = getIO();
-  console.log("IO:", io ? "OK" : "MISSING");
-  console.log("Cron-job: Running 2-minute health check");
+  if (isRunning) {
+    console.log("Skipping overlapping cron");
+    return;
+  }
+
+  isRunning = true;
   try {
+    const io = getIO();
+    console.log("Cron-job: Running 2-minute health check", Date.now());
+
     // Use populate to get user details for emails
     const servers = await serverModel.find({}).populate("user");
 
@@ -25,19 +32,24 @@ export const runHealthCheck = async () => {
         currentResponseTime = Date.now() - startTime;
       } catch (error) {
         currentStatus = "down";
+      }
+      // Only send email if the status actually changed from UP to DOWN
 
-        // Only send email if the status actually changed from UP to DOWN
+      if (previousStatus !== currentStatus) {
+        const html = serverDown(new Date(), server.name, server.url);
+        if (server.user && server.user.email) {
+          const isUp = currentStatus === "up";
+          const subject = isUp
+            ? `✅ Fixed: ${server.name} is UP`
+            : `🚨 Alert: ${server.name} is DOWN`;
+          const html = isUp
+            ? serverUp(new Date(), server.name, server.url)
+            : serverDown(new Date(), server.name, server.url);
 
-        if (previousStatus === "up") {
-          const html = serverDown(new Date(), server.name, server.url);
-          if (server.user && server.user.email) {
-            await sendEmail(
-              server.user.email,
-              "Server Down Alert",
-              `Your server ${server.name} is down`,
-              html,
-            );
-          }
+          // Send the email (don't forget to use backticks for the subject template literal!)
+          sendEmail(server.user.email, subject, subject, html).catch((err) =>
+            console.error("Mail Error:", err),
+          );
         }
       }
 
@@ -48,7 +60,7 @@ export const runHealthCheck = async () => {
       await server.save();
 
       // Create History Log
-      await logModel.create({
+      const newLog = await logModel.create({
         server: server._id,
         user: server.user ? server.user._id : null,
         lastChecked: server.lastChecked,
@@ -64,10 +76,12 @@ export const runHealthCheck = async () => {
         lastChecked: server.lastChecked,
       });
 
-     
+      io.emit("new-log", newLog);
     }
   } catch (err) {
     console.error("Cron Job Error:", err);
+  } finally {
+    isRunning = false;
   }
 };
 
@@ -144,5 +158,6 @@ export const allServersOfUser = async (user) => {
 };
 
 export const initCron = () => {
+  console.log("CRON initialized");
   cron.schedule("*/2 * * * *", runHealthCheck);
 };
