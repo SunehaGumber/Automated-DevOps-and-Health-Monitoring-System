@@ -29,19 +29,20 @@ export default function Dashboard() {
       getAllServers();
     } catch (err) {}
   }, []);
+  
   useEffect(() => {
     console.log("Socket connected?", socket.connected);
 
     if (socket.connected) {
-      console.log("✅ CONNECTED (instant):", socket.id);
+      console.log("CONNECTED (instant):", socket.id);
     }
 
     socket.on("connect", () => {
-      console.log("✅ CONNECTED (event):", socket.id);
+      console.log("CONNECTED (event):", socket.id);
     });
 
     socket.on("disconnect", () => {
-      console.log("❌ DISCONNECTED");
+      console.log("DISCONNECTED");
     });
 
     return () => {

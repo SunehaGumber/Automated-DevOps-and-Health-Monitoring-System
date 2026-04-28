@@ -57,13 +57,13 @@ const submitHandler = async () => {
       }); 
     }
 
-   
-    if (result && result.resetToken) {
+    if (result && (result.accessToken || result.resetToken)) {
       toast.success("OTP verified successfully!");
 
       if (navigation === 'home') {
         return navigate('/', { replace: true }); 
-      } else if (navigation === 'forgotPassword') {
+      }
+      else if (navigation === 'forgotPassword') {
         return navigate('/forgotPassword', { 
           state: { token: result.resetToken || result.token },
           replace: true 

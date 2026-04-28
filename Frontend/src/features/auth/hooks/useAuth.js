@@ -54,7 +54,7 @@ export const useAuth = () => {
     try {
       const response = await verifyEmail({ email, otp });
       setUser(response.user);
-      return true;
+      return response;
     } catch (err) {
       return false;
     } 
