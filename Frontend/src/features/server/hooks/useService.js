@@ -138,7 +138,6 @@ export const useService = () => {
 
   useEffect(() => {
     const logHandler = (log) => {
-      console.log(`UI received log: ${log._id} at ${performance.now()}`);
       setLogs((prev) => {
         // Ensure we are working with an array
         const currentLogs = prev || [];

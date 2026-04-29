@@ -8,6 +8,7 @@ import ServerHeaderCard from "../components/ServerHeaderCard";
 import ResponseTimeChart from "../components/ResponseTimeChart";
 import { Spinner } from "../../auth/components/Spinner";
 import { BackIcon } from "../../common/Icons";
+import IncidentsSection from "../../incidents/components/IncidentsSection";
 
 const formatUTC = (iso) => {
   if (!iso) return "-";
@@ -72,8 +73,10 @@ export default function ServerDetail() {
   const avgResponse = getAvgResponse(logs);
   const navigate = useNavigate();
   const uptimePct = getUptimePct(logs);
-
-  const chartData = [...(logs || [])]
+const filteredLogs = Array.isArray(logs)
+  ? logs.filter(l => String(l.server) === String(id))
+  : [];
+  const chartData = [...(filteredLogs || [])]
     .reverse()
     .slice(-24)
     .map((log) => ({
@@ -117,9 +120,10 @@ export default function ServerDetail() {
         />
         {/* Response time chart */}
         <ResponseTimeChart chartData={chartData} />
+        <IncidentsSection id={id} />
         {/* Log table */}
         <LogTable
-          logs={logs.filter(l => l.server?.toString() === id)}
+          logs={filteredLogs}
           formatUTC={formatUTC}
           getResponseColor={getResponseColor}
         />
