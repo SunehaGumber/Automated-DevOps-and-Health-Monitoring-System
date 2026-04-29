@@ -7,7 +7,8 @@ const serverSchema = new mongoose.Schema({
     },
     url: {
         type: String,
-        required:[true,"URL of your app is required."]
+        required: [true, "URL of your app is required."],
+        match: /^https?:\/\/.+/
     },
     status: {
         type: String,
