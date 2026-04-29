@@ -5,6 +5,7 @@ import logRouter from './routes/log.routes.js';
 import cookieParser from 'cookie-parser'
 import { errorHandler } from './middleware/error.middleware.js';
 import cors from 'cors';
+import incidentRouter from './routes/incident.route.js';
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRouter);
 app.use('/api/server', serverRouter);
 app.use('/api/log', logRouter);
+app.use('/api/incident', incidentRouter);
 
 app.use(errorHandler);
 

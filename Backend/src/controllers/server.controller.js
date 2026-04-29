@@ -2,7 +2,7 @@ import serverModel from "../models/server.model.js";
 import { checkParticularServer } from "../cron/monitor.js";
 import { allServersOfUser } from "../cron/monitor.js";
 import logModel from "../models/log.model.js";
-
+import incidentModel from "../models/incident.model.js";
 export async function createServer(req, res,next) {
   const user = req.user;
   const { name, url } = req.body;
@@ -140,6 +140,9 @@ export async function deleteServer(req, res, next) {
             user: user._id
         });
 
+      await incidentModel.deleteMany({
+        server:id
+      })
         return res.status(200).json({
             message: "Server and associated logs deleted successfully!"
         });

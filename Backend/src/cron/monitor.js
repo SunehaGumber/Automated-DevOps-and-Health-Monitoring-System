@@ -2,11 +2,33 @@ import cron from "node-cron";
 import axios from "axios";
 import serverModel from "../models/server.model.js";
 import logModel from "../models/log.model.js";
-import { serverDown } from "../utils/email.utils.js";
+import { serverDown, serverUp } from "../utils/email.utils.js";
 import sendEmail from "../services/email.service.js";
 import { getIO } from "../socket/socket.js";
-
+import incidentModel from "../models/incident.model.js";
 let isRunning = false;
+const checkServerHealth = async (url, retries = 2) => {
+  let lastError;
+
+  for (let i = 0; i <= retries; i++) {
+    const startTime = Date.now();
+    try {
+      await axios.get(url, { timeout: 5000 });
+      return {
+        status: "up",
+        responseTime: Date.now() - startTime,
+      };
+    } catch (err) {
+      lastError = err;
+      await new Promise((res) => setTimeout(res, 1000));
+    }
+  }
+  return {
+    status: "down",
+    responseTime: 0,
+    error: lastError,
+  };
+};
 export const runHealthCheck = async () => {
   if (isRunning) {
     console.log("Skipping overlapping cron");
@@ -14,55 +36,77 @@ export const runHealthCheck = async () => {
   }
 
   isRunning = true;
+
   try {
     const io = getIO();
-    console.log("Cron-job: Running 2-minute health check", Date.now());
+    console.log("Cron-job: Running health check", Date.now());
 
-    // Use populate to get user details for emails
     const servers = await serverModel.find({}).populate("user");
 
-    for (let server of servers) {
-      const startTime = Date.now();
+    for (const server of servers) {
+      const result = await checkServerHealth(server.url);
+
       const previousStatus = server.status;
-      let currentStatus = "up";
-      let currentResponseTime = 0;
+      const currentStatus = result.status;
+      const responseTime = result.responseTime;
+      const isTransition = previousStatus !== currentStatus;
+      const userEmail = server.user?.email;
 
-      try {
-        await axios.get(server.url, { timeout: 8000 });
-        currentResponseTime = Date.now() - startTime;
-      } catch (error) {
-        currentStatus = "down";
-      }
-      // Only send email if the status actually changed from UP to DOWN
+      // ensure safe default
+      const openIncident = await incidentModel.findOne({
+        server: server._id,
+        status: "open",
+      });
 
-      if (previousStatus !== currentStatus) {
-        const html = serverDown(new Date(), server.name, server.url);
-        if (server.user && server.user.email) {
-          const isUp = currentStatus === "up";
-          const subject = isUp
-            ? `✅ Fixed: ${server.name} is UP`
-            : `🚨 Alert: ${server.name} is DOWN`;
-          const html = isUp
-            ? serverUp(new Date(), server.name, server.url)
-            : serverDown(new Date(), server.name, server.url);
-
-          // Send the email (don't forget to use backticks for the subject template literal!)
-          sendEmail(server.user.email, subject, subject, html).catch((err) =>
-            console.error("Mail Error:", err),
-          );
-        }
-      }
-
-      // Update Server Document
       server.status = currentStatus;
-      server.responseTime = currentResponseTime;
+      server.responseTime = responseTime;
       server.lastChecked = new Date();
       await server.save();
 
-      // Create History Log
+      if (isTransition && currentStatus === "down" ) {
+        if (!openIncident) {
+          const incident=await incidentModel.create({
+            server: server._id,
+            status: "open",
+            startedAt: new Date(),
+          });
+
+          if (userEmail) {
+            sendEmail(
+              userEmail,
+              `🚨 ${server.name} is DOWN`,
+              `🚨 ${server.name} is DOWN`,
+              serverDown(new Date(), server.name, server.url),
+            ).catch(console.error);
+          }
+            io.emit("incident-created", incident);
+        }
+      }
+
+      if (isTransition && currentStatus === "up") {
+        if (openIncident) {
+          openIncident.status = "closed";
+          openIncident.resolvedAt = new Date();
+          openIncident.duration =
+            openIncident.resolvedAt - openIncident.startedAt;
+
+          await openIncident.save();
+
+          if (userEmail) {
+            sendEmail(
+              userEmail,
+              `✅ ${server.name} is UP`,
+               `✅ ${server.name} is UP`,
+              serverUp(new Date(), server.name, server.url),
+            ).catch(console.error);
+          }
+            io.emit("incident-resolved", openIncident);
+        }
+      }
+    
       const newLog = await logModel.create({
         server: server._id,
-        user: server.user ? server.user._id : null,
+        user: server.user?._id,
         lastChecked: server.lastChecked,
         status: server.status,
         responseTime: server.responseTime,
@@ -84,7 +128,6 @@ export const runHealthCheck = async () => {
     isRunning = false;
   }
 };
-
 export const checkParticularServer = async (id, user) => {
   try {
     const server = await serverModel.findOne({ _id: id, user: user._id });

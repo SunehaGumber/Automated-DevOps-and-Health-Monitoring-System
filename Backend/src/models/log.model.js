@@ -33,7 +33,7 @@ const logSchema = new mongoose.Schema({
 }, {
     timestamps:true
 })
-logSchema.index({ timestamp: 1 }, { expireAfterSeconds: 604800 })
+logSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 })
 
 const logModel = mongoose.model('logs', logSchema);
 export default logModel;
