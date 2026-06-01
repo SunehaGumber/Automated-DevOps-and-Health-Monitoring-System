@@ -22,6 +22,7 @@ export async function sessionMiddleware(req, res, next) {
         revoked: false
     })
     const user = await userModel.findById(decoded.id);
+    
     if (!user) {
         return res.status(400).json({
             message:"User no longer exists."

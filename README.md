@@ -1,4 +1,4 @@
-🚀 Server Monitoring & Incident Tracking System
+### Server Monitoring & Incident Tracking System
 
 A real-time full-stack server monitoring system that tracks server health, generates logs, detects incidents automatically, and updates everything live using Socket.IO.
 
@@ -87,14 +87,14 @@ Socket.IO Events → Frontend UI Update
 
 ## ⚙️ Tech Stack
 
-### Frontend
+# Frontend
 - React
 - Context API
 - Custom Hooks
 - Socket.IO Client
 - Tailwind CSS
 
-### Backend
+# Backend
 - Node.js
 - Express.js
 - MongoDB + Mongoose
@@ -187,6 +187,6 @@ npm run dev
 
 Built as a full-stack learning project focusing on:
 
-Backend system design
-Real-time architecture
-Monitoring and incident systems
+        - Backend system design
+        - Real-time architecture
+        - Monitoring and incident systems

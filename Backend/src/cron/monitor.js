@@ -88,7 +88,7 @@ export const runHealthCheck = async () => {
           openIncident.status = "closed";
           openIncident.resolvedAt = new Date();
           openIncident.duration =
-            openIncident.resolvedAt - openIncident.startedAt;
+          openIncident.resolvedAt - openIncident.startedAt;
 
           await openIncident.save();
 
