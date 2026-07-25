@@ -70,7 +70,7 @@ export const getLogs = async ({id}) => {
     try {
         const response = await API.get(`/api/log/server/${id}`);
         return response.data;
-    } catch (error) {
+    } catch (err) {
         console.log(err);  
     }
 }

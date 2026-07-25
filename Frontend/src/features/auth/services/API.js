@@ -22,7 +22,7 @@ API.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    const message = error.response?.data?.message || "Internal Server Error";
+    // const message = error.response?.data?.message || "Internal Server Error";
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

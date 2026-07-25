@@ -56,6 +56,7 @@ export const useAuth = () => {
       setUser(response.user);
       return response;
     } catch (err) {
+      console.log(err);
       return false;
     } 
   };
@@ -63,17 +64,19 @@ export const useAuth = () => {
   const handleRefreshToken = async () => {
    
     try {
-      const response = await refreshToken();
+       await refreshToken();
     } catch (err) {
+      console.log(err);
     } 
   };
 
   const handleLogout = async () => {
     setLoading(true);
     try {
-      const response = await logout();
+     await logout();
       setUser(null);
     } catch (err) {
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -82,9 +85,11 @@ export const useAuth = () => {
   const handleLogoutAll = async () => {
     try {
       setLoading(true);
-      const response = await logoutAll();
+     await logoutAll();
       setUser(null);
     } catch (err) {
+      
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -96,6 +101,7 @@ export const useAuth = () => {
       const response = await resendOTP({ email });
       return response;
     } catch (err) {
+      console.log(err);
       return false;
     } 
   };
@@ -105,6 +111,7 @@ export const useAuth = () => {
       const response = await forgotPassword({ email });
       return response;
     } catch (err) {
+       console.log(err);
       return false;
     } 
   };
@@ -115,6 +122,7 @@ export const useAuth = () => {
       const response = await verifyOTP({ email, otp });
       return response;
     } catch (err) {
+       console.log(err);
     } 
   };
 
@@ -125,14 +133,16 @@ export const useAuth = () => {
       setUser(response?.user);
       return response;
     } catch (err) {
+       console.log(err);
     } 
   };
   const handleChange = async ({currentPassword,newPassword,confirmPassword}) => {
     try {
     
-      const response = await change({ currentPassword, newPassword, confirmPassword });
+    await change({ currentPassword, newPassword, confirmPassword });
       return true;
     } catch (err) {
+      console.log(err);
       
     } 
   }
@@ -142,7 +152,7 @@ export const useAuth = () => {
         const response = await getMe();
         if (response?.user) setUser(response.user);
       } catch (err) {
-        console.error("No active session found");
+        console.error("No active session found",err);
       } finally {
         setLoading(false);
       }

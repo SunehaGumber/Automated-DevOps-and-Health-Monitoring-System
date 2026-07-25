@@ -203,7 +203,7 @@ const submitHandler = async () => {
             <button
               type="button"
               className="w-full bg-blue-700 hover:bg-blue-800 active:scale-[.99] text-white rounded-[10px] px-4 py-[11px] text-[11px] font-bold tracking-[.14em] flex items-center justify-center gap-2.5 transition-all cursor-pointer border-none font-mono"
-              onClick={(e) => {
+              onClick={() => {
                 submitHandler();
               }}
             >

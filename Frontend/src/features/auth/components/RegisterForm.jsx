@@ -12,7 +12,7 @@ import {
 } from "../../common/Icons";
 import { toast } from "react-toastify";
 
-export default function RegisterForm({ step, setStep }) {
+export default function RegisterForm({setStep }) {
   const [showPass, setShowPass] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

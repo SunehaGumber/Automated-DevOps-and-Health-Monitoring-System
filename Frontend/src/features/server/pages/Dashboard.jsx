@@ -53,8 +53,9 @@ export default function Dashboard() {
   const refreshServersHandler = async () => {
     try {
       setLoading(true);
-      const response = await handleRefreshServers();
+      await handleRefreshServers();
     } catch (err) {
+      console.log(err);
     } finally {
       setLoading(false);
     }
